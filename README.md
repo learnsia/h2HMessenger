@@ -13,13 +13,13 @@ h2H Messenger was originally conceived as I was using my other script GnuPG Secu
 
 However, if my client wanted to communicate securely with me, I'd have to get them setup with a key and there was no telling which email client they'd be using.  There was too much headache of supporting various clients (people), email clients, or having them switch to a specific client.
 
-I decided to create a similar tool as GnuPG Secure Form, except allow two-way encrypted communication of the data while at rest and being sent back and forth to a server.  The hosting provider I was using at the time, doesn't allow shell access so using GnuPG was out.  I'm using PHP's OpenSSL native functions and a third-party library to accomplish this task.  This doesn't, in any way shape or form attempts to compete with a tool like PGP or GnuPG, and never will.  It is for a few people to exchange sensitive information and keep the communication secured.  All messages are encrypted in the database with RSA 2048-bit public keys.  This is a non-escrow version so there are no master keys.  The source is open for review.
+I decided to create a similar tool as GnuPG Secure Form, except allow two-way encrypted communication of the data while at rest and being sent back and forth to a server.  The hosting provider I was using at the time, doesn't allow shell access so using GnuPG was out.  I'm using PHP's OpenSSL native functions and a third-party library to accomplish this task.  This doesn't, in any way shape or form attempt to compete with a tool like PGP or GnuPG, and never will.  It is for a few people to exchange sensitive information and keep the communication secured.  All messages are encrypted in the database with the user and sender's keys.  This is a non-escrow version so there are no master keys.  The source is open for review.
 
 Instead of outlining everything all over again, here is the presentation I presented at the NoVa Hackers meeting:
 
 https://docs.google.com/presentation/d/1CWS2j5wba_taYZySYyl6CWeAhu5pKITu951KxRE6u98/edit
 
-This application is meant to be run on an internal network or a host with limited services between a user and their client(s).  The private key and randomly created passphrase are stored in a DB on the server, but protected by the user's password.  When the user authenticates and passes the two-factor authentication, the private key and the random passphrase are stored in PHP session variables.  However, those variables are encrypted at-rest (during the login session) and only decrypted when called in the application (where ever you setup the location of the "phpsec::$_dsn = 'filesystem:/var/rand/data';" take a look inside those files to ensure it is encrypted.  The key for encrypted session variables are stored as a cookie on the client and changed every 30 seconds thanks to PHPSecLib.
+This application is meant to be run on an internal network or a host with limited services between a user and their client(s).  The private key and randomly created passphrase are stored in a DB on the server, but protected by the user's password.  When the user authenticates and passes the two-factor authentication, the private key and the random passphrase are stored in PHP session variables.  However, those variables are encrypted at-rest (during the login session) and only decrypted when called in the application (where ever you setup the location of the "phpsec::$_dsn = 'filesystem:/var/rand/data';" take a look inside those files to ensure it is encrypted).  The key for encrypted session variables are stored as a cookie on the client and changed every 30 seconds thanks to PHPSecLib.
 
 The session file isn't properly being removed which has been reported:
 
@@ -35,9 +35,17 @@ Note the PHP garbage collection can resolve this issue.  Also, the contents of t
 
 
 TODO: Add an admin screen to add more SMS gateways
+
+TODO: Enable session timeout - another reason it is alpha. hehehehe
+
+TODO: Create an admin screen to update configuration items
+
+TODO: Maybe add group messaging support.
+
 Other stuff based on feedback or bug oops. :)
 
 PHP OpenSSL functions & Mcrypt
+
 PHPSeclib (http://phpseclib.com/)
 
 GNU GPL V3.
@@ -48,7 +56,7 @@ Extract to a web directory.
 
 Configure the file:  function.php to your environment.
 
-mysql -u <user> -p dbname < enc.sql
+mysql -u user -p dbname < enc.sql
 
 or use a web interface if that is what you normally use.
 
