@@ -46,7 +46,7 @@ INSTALLATION:
 
 Extract to a web directory.
 
-Configure the file:  config.php to your environment.
+Configure the file:  function.php to your environment.
 
 mysql -u <user> -p dbname < enc.sql
 
