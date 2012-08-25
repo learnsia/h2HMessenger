@@ -1,14 +1,14 @@
 <?php
 
 // PHPSec class: http://phpsec.xqus.com/
-include('phpSec/phpsec.class.php');
-require_once "phpSec/phpsec/phpsec.crypt.php";
+//include('phpSec/phpsec.class.php');
+//require_once "phpSec/phpsec/phpsec.crypt.php";
+//require_once 'phpSec/lib/phpSec/bootstrap.php';
 
 /*******************************************************************************************
 
 Edit below as needed for your environment.
 
-*******************************************************************************************/
 
 // Set this to a dir outside of the web root
 // that the web server can write to.
@@ -20,6 +20,18 @@ phpsec::$_dsn = 'filesystem:/var/rand/data';
 
 // Don't edit this.
 phpsec::init();
+*******************************************************************************************/
+
+require_once 'SecureSession.php';
+
+// change the default session folder in a temporary dir
+$sessionPath = '/var/rand/data';
+session_save_path($sessionPath);
+session_start();
+
+if (empty($_SESSION['time'])) {
+    $_SESSION['time'] = time();
+} 
 
 /* Change this to your DB settings  */
 $db_user = "user";
