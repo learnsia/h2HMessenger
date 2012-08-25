@@ -1,27 +1,12 @@
 <?php
 
-// PHPSec class: http://phpsec.xqus.com/
-//include('phpSec/phpsec.class.php');
-//require_once "phpSec/phpsec/phpsec.crypt.php";
-//require_once 'phpSec/lib/phpSec/bootstrap.php';
-
 /*******************************************************************************************
 
 Edit below as needed for your environment.
 
-
-// Set this to a dir outside of the web root
-// that the web server can write to.
-// Session data is stored here, but it is encrypted
-// by the PHPSec class.  The encrypted key is stored
-// on the client in a cookie.  The encrypted key is changed
-// every 30 seconds.
-phpsec::$_dsn = 'filesystem:/var/rand/data';
-
-// Don't edit this.
-phpsec::init();
 *******************************************************************************************/
 
+// Implements its own session_save_handler()
 require_once 'SecureSession.php';
 
 // change the default session folder in a temporary dir
