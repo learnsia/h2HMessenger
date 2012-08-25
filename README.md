@@ -19,22 +19,7 @@ Instead of outlining everything all over again, here is the presentation I prese
 
 https://docs.google.com/presentation/d/1CWS2j5wba_taYZySYyl6CWeAhu5pKITu951KxRE6u98/edit
 
-This application is meant to be run on an internal network or a host with limited services between a user (e.g. a consultant) and their client(s).  The private key and randomly created passphrase, for the private key, are encrypted and stored in a DB on the server, but protected by the user's password that is used to authenticate to the h2H Messenger application.  When the user authenticates AND passes the two-factor authentication, the private key and the random passphrase are stored in PHP session variables.  However, those variables are encrypted at-rest (during the login session) and only decrypted when called in the application (where ever you setup the location of the "phpsec::$_dsn = 'filesystem:/var/rand/data';") take a look inside those files to ensure it is encrypted.  The key for the encrypted session variables are stored as a cookie on the client and changed every 30 seconds thanks to PHPSec http://phpseclib.com/.
-
-Known Issue:
-
-The session file isn't properly being removed which has been reported:
-
-https://github.com/phpsec/phpSec/issues/98#issuecomment-7512318
-
-Note the PHP garbage collection can resolve this issue.  Also, the contents of the session variables are encrypted.
-
-"I'm unable to fix this at this time, due to how the PHP session works. Calling session_destoy() tries to destroy a session that don't exist and then the cleanup code that should be run is ignored. However the build in garbage collection in PHP should take care of leftover session files.
-
-    session.gc_probability = 1
-    session.gc_divisor = 100
-    session.gc_maxlifetime = 1440"
-
+This application is meant to be run on an internal network or a host with limited services between a user (e.g. a consultant) and their client(s).  The private key and randomly created passphrase, for the private key, are encrypted and stored in a DB on the server, but protected by the user's password that is used to authenticate to the h2H Messenger application.  When the user authenticates AND passes the two-factor authentication, the private key and the random passphrase are stored in PHP session variables.  However, those variables are encrypted at-rest (during the login session) and only decrypted when called in the application (where ever you setup the location of the "phpsec::$_dsn = 'filesystem:/var/rand/data';") take a look inside those files to ensure it is encrypted.  The key for the encrypted session variables are stored as a cookie on the client using Enrico Zimuel's SecureSession.php class http://www.zimuel.it/en/encrypt-php-session-data/.
 
 TODO: Add an admin screen to add more SMS gateways
 Other stuff based on feedback or bug oops. :)
@@ -75,4 +60,3 @@ http://ethertubes.com/install-asterisk-1-8-from-source-on-ubuntu-11-10/
 Here is my tutorial that explains how the authentication works.
 
 https://secure.sukkha.info/asterisk-2fa.html
-
