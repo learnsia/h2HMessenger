@@ -48,19 +48,19 @@ INSTALLATION:
 
 1. Extract the file to a web directory.
 
-tar xzvf <package version>
+ tar xzvf &lt;package version>
 
 2. Configure the file "function.php" to your environment.
 
 3. Create the database:
 
-mysqladmin -u <user> -p create h2HMessenger
+  mysqladmin -u &lt;user> -p create h2HMessenger
 
 4. Import the DB schema:
 
-mysql -u <user> -p h2HMessenger < enc.sql
+  mysql -u &lt;user> -p h2HMessenger < enc.sql
 
-(If you use a tool such as PHPMYAdmin, then create the DB in that manner)
+  (If you use a tool such as PHPMYAdmin, then create the DB in that manner)
 
 Two-factor authentication:
 
