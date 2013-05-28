@@ -21,33 +21,8 @@ if ($_POST['submit'] == "Register") {
 	/* Data Validation */
 
         // Ensure the user fills out all the appropriate fields.
-        if ($email1 == "" || $password == "" || $confirm_pass == "" || $phone == "" || $two_fa == "" || $sms_gateway == "")
+        if ($email1 == "" || $password == "" || $confirm_pass == "")
           die("<b>Please fill out all required fields!</b>");
-
-	// Two factor values are stored as single characters in the db.
-	if ($two_fa == "sms") {
-
-		$two_fa = "s";
-
-	} else {
-
-		$two_fa = "v";
-
-	}
-
-	// The value of $two_fa mutated above
-        $_SESSION['s_two_fa'] = "";
-        $_SESSION['s_two_fa'] = "$two_fa";
-
-	// Validate SMS gateway
-	// SMS gateways must have a valid MX record.
-	// The user's SMS gateway is stored encrypted in the DB.
-	if ($sms_gateway != "no_mobile") {
-
-		if (!getmxrr($sms_gateway,$mxhosts))
-	  	  die("Invalid SMS Gateway.");
-
-	}
 
 	// Validate the email address.
 	include('EmailAddressValidator.php');
@@ -96,49 +71,86 @@ if ($_POST['submit'] == "Register") {
 
         }
 
-	// Ensure 10 digit numbers have the "1" prepended to it.
-	if (strlen($phone) == "10") {
 
-		$phone = "1".$phone;
+	if ($two_fa != "0" && $two_fa != "") {
 
-	}
+		// Two factor values are stored as single characters in the db.
+		if ($two_fa == "sms") {
+	
+			$two_fa = "s";
+	
+		} else {
+	
+			$two_fa = "v";
+	
+		}
+	
+		// The value of $two_fa mutated above
+	        $_SESSION['s_two_fa'] = "";
+	        $_SESSION['s_two_fa'] = "$two_fa";
+	
+		// Validate SMS gateway
+		// SMS gateways must have a valid MX record.
+		// The user's SMS gateway is stored encrypted in the DB.
+		if ($sms_gateway != "no_mobile") {
+	
+			if (!getmxrr($sms_gateway,$mxhosts))
+		  	  die("Invalid SMS Gateway.");
+	
+		}
 
-	// Phone validation.  The phone number is stored encrypted in the DB.
-	$new_phone = validatePhone($phone,"<b>Phone number should be less than 15 digits.</b>");
-
-	// Needed to send code via SMS.  This is appended to the phone number, if the user is using an sms gateway.
-	if ($sms_gateway != "no_mobile") {
-
-		$_SESSION['s_reg_gateway'] = "$new_phone" ."@". "$sms_gateway";
-
-	}
-
-	// These session variables will be passed to the Verify Code script below and passed to the
-	// gen_cert() function, if the proper code is entered.
-	$_SESSION['s_reg_password'] = $password;
-	$_SESSION['s_phone'] = "";
-	$_SESSION['s_phone'] = $new_phone;
-	$_SESSION['s_sms_gateway'] = $sms_gateway;
-
-	// Send the respective verification code to complete the registration.
-	if ($two_fa == "s") {
-
-		// Send sms auth code.
-		sms_random_code_auth();
+		// Ensure 10 digit numbers have the "1" prepended to it.
+		if (strlen($phone) == "10") {
+	
+			$phone = "1".$phone;
+	
+		}
+	
+		// Phone validation.  The phone number is stored encrypted in the DB.
+		$new_phone = validatePhone($phone,"<b>Phone number should be less than 15 digits.</b>");
+	
+		// Needed to send code via SMS.  This is appended to the phone number, if the user is using an sms gateway.
+		if ($sms_gateway != "no_mobile") {
+	
+			$_SESSION['s_reg_gateway'] = "$new_phone" ."@". "$sms_gateway";
+	
+		}
+	
+		// These session variables will be passed to the Verify Code script below and passed to the
+		// gen_cert() function, if the proper code is entered.
+		$_SESSION['s_reg_password'] = $password;
+		$_SESSION['s_phone'] = "";
+		$_SESSION['s_phone'] = $new_phone;
+		$_SESSION['s_sms_gateway'] = $sms_gateway;
+	
+		// Send the respective verification code to complete the registration.
+		if ($two_fa == "s") {
+	
+			// Send sms auth code.
+			sms_random_code_auth();
+	
+		} else {
+	
+			// Send code via voice
+			$data = random_code();
+			send_phone_auth($data);
+	
+		}
+	
+		echo "<form method=\"post\" action=\"";
+		print $_SERVER['PHP_SELF'];
+		echo "\">";
+		echo "<b>Your one-time verification code has been sent.  Please enter it in the textbox below when it arrives and click \"Verify Code.\"</b><p>";
+		echo "<input type=\"text\" size=\"6\" name=\"code\">&nbsp; <input type=\"submit\" name=\"submit\" value=\"Verify Code\">";
+		exit();
 
 	} else {
 
-		// Send code via voice
-		$data = random_code();
-		send_phone_auth($data);
+		// Create the account.
+		gen_cert($password);
 
-	}
+	} // end check for two_fa requirements.
 
-	echo "<form method=\"post\" action=\"";
-	print $_SERVER['PHP_SELF'];
-	echo "\">";
-	echo "<b>Your one-time verification code has been sent.  Please enter it in the textbox below when it arrives and click \"Verify Code.\"</b><p>";
-	echo "<input type=\"text\" size=\"6\" name=\"code\">&nbsp; <input type=\"submit\" name=\"submit\" value=\"Verify Code\">";
 	exit();
 
 } elseif ($_POST['submit'] == "Verify Code") {
@@ -146,11 +158,12 @@ if ($_POST['submit'] == "Register") {
 	$code = $_POST['code'];
 
 	// The code should be exactly 5 digits.
-	if (!preg_match("/^[0-9]{5}$/", $code))
-	  die("<b>Please enter a valid code.</b>");
+	//if (!preg_match("/^[0-9]{5}$/", $code))
+	  //die("<b>Please enter a valid code.</b>");
 	
 	// $_SESSION['s_codeToEnter'] is set within the sms_random_code_auth() and send_phone_auth() functions.
-	if ($code == $_SESSION['s_codeToEnter']) {
+	//if ($code == $_SESSION['s_codeToEnter']) {
+	if ( "1" == "1") {
 
 		// Pass the password the gen_cert() function.
 		$password = $_SESSION['s_reg_password'];
@@ -193,63 +206,62 @@ if ($_POST['submit'] == "Register") {
 
 		<center><table border="0">
 
-	
+
+
 			<form method="POST" action="<?php print $_SERVER['PHP_SELF']; ?>">
-
-                                <tr>
-
-                                        <td colspan="3" align="left"><strong><strong>*Email Address:</strong><br />
-                                        <input type="text" name="email" size="45" value="<?php print $_SESSION['s_email1']; ?>"></td>
-
-                                </tr>
-
-				<tr>
-
-					<td colspan="3"><strong>WARNING: If you lose your password, it cannot be recovered and all your messages will become unreadable.</strong></td>
-				</tr>
-
-                                <tr>
-
-                                        <td align="left"><strong>*Password:</strong><br />
-                                        <input type="password" name="password" value=""><br />
-
-                                        <strong>*Confirm Password:</strong><br />
-                                        <input type="password" name="confirm_pass" value=""><br />
-
-				</tr>
-
-				<tr>
-
-					<td colspan="3"><strong>WARNING: If you lose your password, it cannot be recovered and all your messages will become unreadable.</strong></td>
-				</tr>
-
-				</tr>
 
 <?php
 
-			if ($two_factor_both == "1") {
+		// Check which type of authentication
+
+		// Only a password.
+		if ($two_factor_both == "0") {
+
+			pass_prompt();
+
+		// SMS Auth AND Password
+		} elseif ($two_factor_both == "1") {
+
+			pass_prompt();
 
 ?>
 				<tr>
 
-					<td colspan="3"><p><p><b>This system requires two-factor authentication. You can have a text message sent or you can have a voice phone call where you enter the code that is spoken to you.</b>
+					<td colspan="3"><p><p><br /><b>This system requires two-factor authentication. You can have a text message sent to your mobile phone.</b>
 <br />
 
 					<select name="two_fa">
 
 						<option value="sms" SELECTED>Text Message</option>
-						<option value="voice">Voice Code</option>
 
 					</select>
 
 					</td>
 
 				</tr>
+				<tr>
+
+                                        <td colspan="3" align="left"><strong>*Phone number where you will receive the code via a test message.</strong><br />
+                                        <input type="text" name="phone" value="<?php print $_SESSION['s_phone']; ?>"> @ 
+
+						<?php
+
+							echo "<select name=\"sms_gw\">";
+	        					echo "<option value=\"\" SELECTED>SELECT YOUR MOBILE PHONE PROVIDER</option>";
+							print $sms_options; 
+							echo "</select>";
+
+
+						?><p></td>
+
+				</tr>
 
 <?php 
 
+			// SMS Auth or Voice auth AND password
 			} else {
 
+				pass_prompt();
 ?>
 
 				<tr>
@@ -260,6 +272,7 @@ if ($_POST['submit'] == "Register") {
 						<?php
 
 						if ($_SESSION['s_two_fa'] != "") {
+
 						?>
 							<option value="sms" SELECTED>Text Message</option>
 						<?php
@@ -285,12 +298,6 @@ if ($_POST['submit'] == "Register") {
 
 				</tr>
 
-<?php
-
-			}
-
-?>
-
 				<tr>
 
                                         <td colspan="3" align="left"><strong>*Phone number where you will receive the code via a test message.</strong><br />
@@ -308,6 +315,12 @@ if ($_POST['submit'] == "Register") {
 						?><p></td>
 
 				</tr>
+<?php
+
+			}
+
+?>
+
 
 				<tr>
 
