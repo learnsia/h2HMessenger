@@ -32,7 +32,6 @@ TODO: Add an admin screen to add more SMS gateways
 Other stuff based on feedback or bug oops. :)
 
 PHP OpenSSL functions & Mcrypt
-PHPSeclib (http://phpseclib.com/)
 
 GNU GPL V3.
 
