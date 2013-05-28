@@ -119,6 +119,7 @@ echo "Locked: $locked_time  Time to lockout: $lockout_time<br />";
 			$_SESSION['s_authed'] = "";
 			$_SESSION['s_phone'] = "";
 			$_SESSION['s_delivery'] = "";
+			$_SESSION['s_fprint'] = "";
 
 			// Session variables to be used throughout the login session
 			$_SESSION['s_id'] = $id;
@@ -129,6 +130,11 @@ echo "Locked: $locked_time  Time to lockout: $lockout_time<br />";
 			$_SESSION['s_pub'] = $pub;
 			$_SESSION['s_phone'] = $priv_phone_no;
 			$_SESSION['s_authed'] = "USER_AUTHENTICATED";
+
+			// SHA1 fingerprint
+			$fprint = sha1_thumbprint($pub);
+			$fprint = chunk_split($fprint,4);
+			$_SESSION['s_fprint'] = $fprint;
 
 			// If the user uses SMS then we prepare the code to be sent to that address
 			if ($_SESSION['s_delivery'] == "s") {
@@ -146,6 +152,7 @@ echo "Locked: $locked_time  Time to lockout: $lockout_time<br />";
 			$_SESSION['s_timeout'] = "";
 			$_SESSION['s_timeout'] = $timeout; */
 
+			$_SESSION['s_preauth'] = "HAS_PREAUTH";
                 	// Redirect to the login screen
                 	header('Location: preauth.php');
 			exit();
