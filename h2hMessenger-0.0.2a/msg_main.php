@@ -33,7 +33,7 @@ $sql_result = mysql_query($sql,$connection)
 
 Select a user to email:<br />
 
-<select name="to_email"><br />
+<select name="to_email" id="search_box" class="search_box"><br />
 
 <?php
 
@@ -57,7 +57,10 @@ print $_SESSION['s_phone'];
 
 </select>
 
+<ul id="results" class="update"></ul>
+
 <input type="submit" value="Compose">
+<input type="submit" value="Get Fingerprint" class="search_button" alt="Select an email above and check with the person to ensure it matches their fingerprint."/>
 
 </form><br /><br />
 
