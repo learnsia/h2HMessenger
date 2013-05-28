@@ -19,16 +19,20 @@ if (empty($_SESSION['time'])) {
 } 
 
 /* Change this to your DB settings  */
-$db_user = "user";
-$db_pass = "password";
-$db_name = "DATABASE";
-$db_host = "HOST";
+$db_user = "";
+$db_pass = "";
+$db_name = "";
+$db_host = "";
+
+/* Public account search */
+$db_user_public = "";
+$db_user_pass = "";
 
 // The url and path to the h2h messenger web root, *NO* trailing slash.
 // CHANGE THIS TO YOUR DOMAIN
-$site_url = "secure.sukkha.info/enc";
+$site_url = "";
 // This doesn't need to be a real address for your domain.
-$from_email = "noreply@sukkha.info";
+$from_email = "";
 
 // Lockout time
 // The user will be able to login after the number of minutes below.
@@ -39,8 +43,10 @@ $lockout_time = "15";
 // Number of failed logins before the user is locked out.
 $failed_count = "5";
 
-// Change to 1 to enable two factor authentication for SMS AND voice phone call options.
-$two_factor_both = "1";
+// Change to 0 to disable two-factor auth
+// Change to 1 for SMS two-factor auth and password.
+// Change to 2 to enable two factor authentication for SMS AND voice phone call options.
+$two_factor_both = "0";
 
 // Dial pattern.
 // I use Junction networks for my outbound calling and a "1" has to be prepended to all
@@ -116,8 +122,9 @@ function loggedIn() {
 function menu() {
 
 	$logged_in = $_SESSION['s_email'];
+	$t_fprint = $_SESSION['s_fprint'];
 
-	echo "Logged in as $logged_in:  <center><a href=\"msg_main.php\">Home</a> &nbsp;&nbsp; <b>||</b> &nbsp;&nbsp;<a href=\"change_pass.php\">Change Passphrase</a>&nbsp;&nbsp; <b>||</b> &nbsp;&nbsp;<a href=\"search.php\">Search for Keys</a> &nbsp;&nbsp; <b>||</b> &nbsp;&nbsp;<a href=\"logout.php\">Logout</a></center>";
+	echo "Logged in as $logged_in:  <center><a href=\"msg_main.php\">Home</a> &nbsp;&nbsp; <b>||</b> &nbsp;&nbsp;<a href=\"change_pass.php\">Change Passphrase</a>&nbsp;&nbsp; <b>||</b> &nbsp;&nbsp;<a href=\"search.php\">Search for Keys</a> &nbsp;&nbsp; <b>||</b> &nbsp;&nbsp;<a href=\"logout.php\">Logout</a><br />Fingerprint: ". $_SESSION['s_fprint'] . "</center>";
 	echo "<hr>";
 
 }
@@ -627,6 +634,57 @@ function mressf() {
 
 }
 
+// sha1_thumbprint
+// http://stackoverflow.com/a/9593370
+function sha1_thumbprint($file) {
+
+    $file = preg_replace('/\-+BEGIN CERTIFICATE\-+/','',$file);
+    $file = preg_replace('/\-+END CERTIFICATE\-+/','',$file);
+    $file = trim($file);
+    $file = str_replace( array("\n\r","\n","\r"), '', $file);
+    $bin = base64_decode($file);
+
+    return sha1($bin);
+
+} // end sha1_thumbprint function
+
+// Prompt to display on the registration screen
+function pass_prompt() {
+
+?>
+
+ <tr>
+
+                                        <td colspan="3" align="left"><strong><strong>*Email Address:</strong><br />
+                                        <input type="text" name="email" size="45" value="<?php print $_SESSION['s_email1']; ?>"></td>
+
+                                </tr>
+
+                                <tr>
+
+                                        <td colspan="3"><strong>WARNING: If you lose your password, it cannot be recovered and all your messages will become unreadable.</strong></td>
+                                </tr>
+
+                                <tr>
+
+                                        <td align="left"><strong>*Password:</strong><br />
+                                        <input type="password" name="password" value=""><br />
+
+                                        <strong>*Confirm Password:</strong><br />
+                                        <input type="password" name="confirm_pass" value=""><br />
+
+                                </tr>
+
+                                <tr>
+
+                                        <td colspan="3"><strong>WARNING: If you lose your password, it cannot be recovered and all your messages will become unreadable.</strong></td>
+                                </tr>
+
+                                </tr>
+
+<?php
+
+}
 
 // Clean data before inserting into db query
 function cleanup($value) {
@@ -683,6 +741,42 @@ function html_header() {
         <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
         <link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
         <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+
+<?php /* Script used to verify fingerprint of a recipient's public key */ ?>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
+<script type="text/javascript">
+ 
+/* Function borrowed from: http://www.codeforest.net/simple-search-with-php-jquery-and-mysql by Zvonko Bi.kup*/
+$(function() {
+ 
+    $(".search_button").click(function() {
+        // getting the value that user typed
+        var searchString    = $("#search_box").val();
+        // forming the queryString
+        var data            = 'to_email='+ searchString;
+         
+        // if searchString is not empty
+        if(searchString) {
+            // ajax call
+            $.ajax({
+                type: "POST",
+                url: "get_fprint.php",
+                data: data,
+                beforeSend: function(html) { // this happens before actual call
+                    $("#results").html(''); 
+                    $("#searchresults").show();
+                    $(".word").html(searchString);
+               },
+               success: function(html){ // this happens after we get results
+                    $("#results").show();
+                    $("#results").append(html);
+              }
+            });    
+        }
+        return false;
+    });
+});
+</script>
 
 </head>
 <body>
