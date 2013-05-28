@@ -3,9 +3,7 @@ h2H Messenger
 ***************************************
 ***************************************
 
-THIS IS AN ALPHA RELEASE AND NOT MEANT
-
-FOR PRODUCTION USE.
+THIS IS A BETA RELEASE.
 
 ***************************************
 ***************************************
