@@ -21,6 +21,13 @@ https://docs.google.com/presentation/d/1CWS2j5wba_taYZySYyl6CWeAhu5pKITu951KxRE6
 
 This application is meant to be run on an internal network or a host with limited services between a user (e.g. a consultant) and their client(s).  The private key and randomly created passphrase, for the private key, are encrypted and stored in a DB on the server, but protected by the user's password that is used to authenticate to the h2H Messenger application.  When the user authenticates AND passes the two-factor authentication, the private key and the random passphrase are stored in PHP session variables.  However, those variables are encrypted at-rest (during the login session) and only decrypted when called in the application (where ever you setup the location of the "phpsec::$_dsn = 'filesystem:/var/rand/data';") take a look inside those files to ensure it is encrypted.  The key for the encrypted session variables are stored as a cookie on the client using Enrico Zimuel's SecureSession.php class http://www.zimuel.it/en/encrypt-php-session-data/.
 
+CHANGELOG:
+
+5/27/2013 
+- Added a fingerprint verification routine.
+- Added the option to not require two-factor authentication (for organizations using this for internal use only.)
+
+
 TODO: Add an admin screen to add more SMS gateways
 Other stuff based on feedback or bug oops. :)
 
