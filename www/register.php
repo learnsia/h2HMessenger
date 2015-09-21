@@ -1,28 +1,28 @@
 <?php
 
-include('function.php');
+include('includes/function.php');
 
 if ($_POST['submit'] == "Register") {
 
-        // Declare variables
-        $email1 = stripslashes(htmlentities($_POST['email']));
-        $password = $_POST['password'];
-        $confirm_pass = $_POST['confirm_pass'];
-        $phone = trim($_POST['phone']);
-        $two_fa = trim($_POST['two_fa']);
-        $sms_gateway = trim($_POST['sms_gw']);
+    // Declare variables
+    $email1 = stripslashes(htmlentities($_POST['email']));
+    $password = $_POST['password'];
+    $confirm_pass = $_POST['confirm_pass'];
+    $phone = trim($_POST['phone']);
+    $two_fa = trim($_POST['two_fa']);
+    $sms_gateway = trim($_POST['sms_gw']);
 
-        // Set session for variables.  These are echoed on the original registration form
-        // in case of errors.  Some browsers will erase all fields.  This will prevent that from occuring.
-        $_SESSION['s_email1'] = "$email1";
-        $_SESSION['s_phone'] = "$phone";
-        $_SESSION['s_two_fa'] = "$two_fa";
+    // Set session for variables.  These are echoed on the original registration form
+    // in case of errors.  Some browsers will erase all fields.  This will prevent that from occuring.
+    $_SESSION['s_email1'] = "$email1";
+    $_SESSION['s_phone'] = "$phone";
+    $_SESSION['s_two_fa'] = "$two_fa";
 
 	/* Data Validation */
 
-        // Ensure the user fills out all the appropriate fields.
-        if ($email1 == "" || $password == "" || $confirm_pass == "")
-          die("<b>Please fill out all required fields!</b>");
+    // Ensure the user fills out all the appropriate fields.
+    if ($email1 == "" || $password == "" || $confirm_pass == "")
+    	die("<b>Please fill out all required fields!</b>");
 
 	// Validate the email address.
 	include('EmailAddressValidator.php');
@@ -30,46 +30,46 @@ if ($_POST['submit'] == "Register") {
 
 	if ($validator->check_email_address($email1)) { 
 
-	} else {
- 
+		} else {
+
 		// Email not valid
 		die("Invalid email address. <strong>$email1</strong>");
 
 	}
 	
-        /* ################### PREVENT Duplicate accounts  ############################ */
+	/* ################### PREVENT Duplicate accounts  ############################ */
 
 	$connection = connection();
 
 	// Query to check if email already exists
-        $sql = mressf("SELECT email FROM users WHERE email = '%s'", $email1);
+    $sql = mressf("SELECT email FROM users WHERE email = '%s'", $email1);
 
 	// Execute query
 	$sql_result = mysql_query($sql,$connection)
-	  or die("Error validating account.");
+		or die("Error validating account.");
 
-       // See if there are any results
-       if (mysql_num_rows($sql_result) == "0" ) {
+   // See if there are any results
+   if (mysql_num_rows($sql_result) == "0" ) {
 
-       } else {
+   } else {
 
-                echo "<b>This email address already exists. <strong>$email1</strong>";
-                exit();
+		echo "<b>This email address already exists. <strong>$email1</strong>";
+		exit();
 
-       }
+   }
 
 	// Check password requirements
-        $test_pass = check_pass($password,$confirm_pass);
+    $test_pass = check_pass($password,$confirm_pass);
 
-        if ($test_pass == "Strong.") {
+    if ($test_pass == "Strong.") {
 
-        } else {
+    } else {
 
-                echo "Your password doesn't meet all security requirements.<br />";
-                echo "$test_pass";
-                exit();
+		echo "Your password doesn't meet all security requirements.<br />";
+		echo "$test_pass";
+		exit();
 
-        }
+    }
 
 
 	if ($two_fa != "0" && $two_fa != "") {
@@ -176,24 +176,24 @@ if ($_POST['submit'] == "Register") {
 } else {
 
 
-		/* Registration form */
-		connection();
+	/* Registration form */
+	connection();
 
-		// Query to retrieve SMS gateways
-		$sms_sql = "SELECT gateway,provider FROM sms ORDER BY provider ASC";
-	
-		// Execute Query to retrieve SMS gateways
-		$sms_sql_query = mysql_query($sms_sql)
-		  or die("Error retrieving SMS gateways.");
-	
-		while($row = mysql_fetch_assoc($sms_sql_query)) {
-	
-	        	$gw_gateway = $row['gateway'];
-	        	$gw_provider = $row['provider'];
-	
-	        	$sms_options .= "<option value=\"$gw_gateway\">$gw_provider - $gw_gateway</option>";
-	
-		}
+	// Query to retrieve SMS gateways
+	$sms_sql = "SELECT gateway,provider FROM sms ORDER BY provider ASC";
+
+	// Execute Query to retrieve SMS gateways
+	$sms_sql_query = mysql_query($sms_sql)
+	  or die("Error retrieving SMS gateways.");
+
+	while($row = mysql_fetch_assoc($sms_sql_query)) {
+
+		$gw_gateway = $row['gateway'];
+		$gw_provider = $row['provider'];
+
+		$sms_options .= "<option value=\"$gw_gateway\">$gw_provider - $gw_gateway</option>";
+
+	}
 
 ?>
 
@@ -338,7 +338,7 @@ if ($_POST['submit'] == "Register") {
 
 <?php
 
-html_footer();
+include('includes/footer.php');
 }
 
 ?>
