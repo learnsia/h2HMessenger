@@ -1,6 +1,6 @@
 <?php
 
-include('includes/function.php');
+include('function.php');
 
 if ($_POST['submit'] == "Register") {
 
@@ -217,12 +217,12 @@ if ($_POST['submit'] == "Register") {
 		// Only a password.
 		if ($two_factor_both == "0") {
 
-			pass_prompt();
+			include('includes/pass_prompt.php');
 
 		// SMS Auth AND Password
 		} elseif ($two_factor_both == "1") {
 
-			pass_prompt();
+			include('includes/pass_prompt.php');
 
 ?>
 				<tr>
@@ -261,7 +261,7 @@ if ($_POST['submit'] == "Register") {
 			// SMS Auth or Voice auth AND password
 			} else {
 
-				pass_prompt();
+				include('includes/pass_prompt.php');
 ?>
 
 				<tr>
