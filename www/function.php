@@ -10,7 +10,7 @@ Edit below as needed for your environment.
 require_once 'SecureSession.php';
 
 // change the default session folder in a temporary dir
-$sessionPath = '/var/rand/data';
+$sessionPath = '/tmp';
 session_save_path($sessionPath);
 session_start();
 
@@ -18,48 +18,8 @@ if (empty($_SESSION['time'])) {
     $_SESSION['time'] = time();
 } 
 
-/* Change this to your DB settings  */
-$db_user = "";
-$db_pass = "";
-$db_name = "";
-$db_host = "";
-
-/* Public account search */
-$db_user_public = "";
-$db_user_pass = "";
-
-// The url and path to the h2h messenger web root, *NO* trailing slash.
-// CHANGE THIS TO YOUR DOMAIN
-$site_url = "";
-// This doesn't need to be a real address for your domain.
-$from_email = "";
-
-// Lockout time
-// The user will be able to login after the number of minutes below.
-// Value is in minutes.
-$lockout_time = "15";
-
-// Failed logins
-// Number of failed logins before the user is locked out.
-$failed_count = "5";
-
-// Change to 0 to disable two-factor auth
-// Change to 1 for SMS two-factor auth and password.
-// Change to 2 to enable two factor authentication for SMS AND voice phone call options.
-$two_factor_both = "0";
-
-// Dial pattern.
-// I use Junction networks for my outbound calling and a "1" has to be prepended to all
-// calls.  Add what is required for your implementation such as "91", assuming 9 is required
-// to be dialed for your dialplan.
-// NOT YET IMPLEMENTED.
-// The current system works by requiring a "1" to be prepended to the number.
-//$dial_pattern = "1";
-
-// Caller ID
-// If supported, by your voip provider enter your caller id to be displayed when placing a
-// call for authentication.
-$caller_id = "YOUR NUMBER";
+# pull in our user configuration
+require_once('includes/config.php');
 
 /*******************************************************************************************
 
@@ -181,7 +141,7 @@ private key are encrypted with the passphrase the user uses to login.
 // The passphrase will remain the same until the user changes it
 function generatePassphrase($upassword, $salt = null) {
 
-define('P_SALT_LENGTH', 23);
+    define('P_SALT_LENGTH', 23);
 
     if ($salt === null) {
 
@@ -200,211 +160,199 @@ define('P_SALT_LENGTH', 23);
 
 function gen_cert($upassword) {
 
-	// Values automatically populated for the SSL certificate for anonymity
-        $country = "YY";
-        $state = "XX";
-        $city = "Somewhere";
-	$orgName = "no org";
-	$orgUnitName = "no org unit";
-        $businessname = "mind your own business";
-        $commonName = "no name";
+    // Values automatically populated for the SSL certificate for anonymity
+    $country = "YY";
+    $state = "XX";
+    $city = "Somewhere";
+    $orgName = "no org";
+    $orgUnitName = "no org unit";
+    $businessname = "mind your own business";
+    $commonName = "no name";
 
-	// Get email address
-	$emailAddress = $_SESSION['s_email1'];
+    // Get email address
+    $emailAddress = $_SESSION['s_email1'];
 
-        /** Create Private and Public Key pairs */
-	/** sumadhuracool at gmail dot com 23-Jun-2011 04:22 => http://www.php.net/manual/en/function.openssl-public-encrypt.php */
-        $dn = array("countryName" => $country, "stateOrProvinceName" => $state, "localityName" => $city, "organizationName" =>$orgName, "organizationalUnitName" => $orgUnitName, "commonName" => $commonName, "emailAddress" => $emailAddress);
+    /** Create Private and Public Key pairs */
+    /** sumadhuracool at gmail dot com 23-Jun-2011 04:22 => http://www.php.net/manual/en/function.openssl-public-encrypt.php */
+    $dn = array("countryName" => $country, "stateOrProvinceName" => $state, "localityName" => $city, "organizationName" =>$orgName, "organizationalUnitName" => $orgUnitName, "commonName" => $commonName, "emailAddress" => $emailAddress);
 
-	// Users may be required to change their passphrase on a routine basis, due to organizational policies.
-	// PHP currently doesn't have an option to allow users to change their private key passphrase
-	// Accordingly, the passphrase has to be changed via the commandline. :-/
-        // Password to insert into the database.
-	$upassword = escapeshellcmd($upassword);
+    // Users may be required to change their passphrase on a routine basis, due to organizational policies.
+    // PHP currently doesn't have an option to allow users to change their private key passphrase
+    // Accordingly, the passphrase has to be changed via the commandline. :-/
+    // Password to insert into the database.
+    $upassword = escapeshellcmd($upassword);
 
-	// Password to encrypt the private key and its passphrase while stored in the database.
-	$enc_pass = $upassword;
+    // Password to encrypt the private key and its passphrase while stored in the database.
+    $enc_pass = $upassword;
 
-	// Private Key credentials
-        $privkeypass = generatePassphrase($upassword);
+    // Private Key credentials
+    $privkeypass = generatePassphrase($upassword);
 
-	// Keys expire after 5 years
-        $numberofdays = 1826;
+    // Keys expire after 5 years
+    $numberofdays = 1826;
 
-        // Create the 2048-bit RSA key
-	/** sumadhuracool at gmail dot com 23-Jun-2011 04:22 => http://www.php.net/manual/en/function.openssl-public-encrypt.php */
-        $privkey = openssl_pkey_new(array('private_key_bits' => 2048,'private_key_type' => OPENSSL_KEYTYPE_RSA));
-        $csr = openssl_csr_new($dn, $privkey);
-        $sscert = openssl_csr_sign($csr, null, $privkey, $numberofdays);
-        openssl_x509_export($sscert, $publickey);
-        openssl_pkey_export($privkey, $privatekey, $privkeypass);
-        openssl_csr_export($csr, $csrStr);
+    // Create the 2048-bit RSA key
+    /** sumadhuracool at gmail dot com 23-Jun-2011 04:22 => http://www.php.net/manual/en/function.openssl-public-encrypt.php */
+    $privkey = openssl_pkey_new(array('private_key_bits' => 2048,'private_key_type' => OPENSSL_KEYTYPE_RSA));
+    $csr = openssl_csr_new($dn, $privkey);
+    $sscert = openssl_csr_sign($csr, null, $privkey, $numberofdays);
+    openssl_x509_export($sscert, $publickey);
+    openssl_pkey_export($privkey, $privatekey, $privkeypass);
+    openssl_csr_export($csr, $csrStr);
 
-	// Here is where the hash from generatePassphrase (passphrase for the private key) and the private key are delimited by an @
-	// and encrypted using the unsalted and unhashed passphrase (the cleartext passphrase) the user uses to authenticate, $enc_pass.
-	// This is done because the hashed password is stored in cleartext in the DB.  Accordingly, if the DB was jacked, then the
-	// 'acker would have the passphrase to decrypt the private key and its accompanying passphrase.
-	// With this setup, they'd have to try and crack the hash to get the cleartext passphrase, to do their deed.
-	// The hash for authentication is salted, which makes rainbow tables computationally infeasible.
+    // Here is where the hash from generatePassphrase (passphrase for the private key) and the private key are delimited by an @
+    // and encrypted using the unsalted and unhashed passphrase (the cleartext passphrase) the user uses to authenticate, $enc_pass.
+    // This is done because the hashed password is stored in cleartext in the DB.  Accordingly, if the DB was jacked, then the
+    // 'acker would have the passphrase to decrypt the private key and its accompanying passphrase.
+    // With this setup, they'd have to try and crack the hash to get the cleartext passphrase, to do their deed.
+    // The hash for authentication is salted, which makes rainbow tables computationally infeasible.
 
-	// Updated to encrypt the phone number and SMS gateway of the user.
-	$phone_no = $_SESSION['s_phone'];
-	$sms_gateway = $_SESSION['s_sms_gateway'];
+    // Updated to encrypt the phone number and SMS gateway of the user.
+    $phone_no = $_SESSION['s_phone'];
+    $sms_gateway = $_SESSION['s_sms_gateway'];
 
-        /** Encrypt the private key and base64_encode it to store in the database. */
-        $sealed_priv = trim(base64_encode(mcrypt_encrypt(MCRYPT_RIJNDAEL_256, $enc_pass, $privkeypass."@".$privatekey."@".$phone_no."@".$sms_gateway, MCRYPT_MODE_ECB, mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB), MCRYPT_RAND))));
+    /** Encrypt the private key and base64_encode it to store in the database. */
+    $sealed_priv = trim(base64_encode(mcrypt_encrypt(MCRYPT_RIJNDAEL_256, $enc_pass, $privkeypass."@".$privatekey."@".$phone_no."@".$sms_gateway, MCRYPT_MODE_ECB, mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB), MCRYPT_RAND))));
 
-        //return $encryptedPrivate;
+    //return $encryptedPrivate;
 
-	// Generate hashed pass to store in db, this is the salted and hashed passphrase for the user to authenticate.
-        $hashed = generateHash($upassword);
+    // Generate hashed pass to store in db, this is the salted and hashed passphrase for the user to authenticate.
+    $hashed = generateHash($upassword);
 
-	// DB connection
-        $connection = connection();
+    // DB connection
+    $connection = connection();
 
-	// Insert user account information
-	$clean_email = mysql_real_escape_string($emailAddress);
-	$clean_two_fa = mysql_real_escape_string($_SESSION['s_two_fa']);
-	// I will be 100 on 2075-03-01. hehehe
-        $sql = "INSERT INTO users VALUES('','$emailAddress', '$clean_two_fa', '$hashed', '$sealed_priv', '$publickey', '10', '0', '2075-03-01 12:00:00')";
+    // Insert user account information
+    $clean_email = mysql_real_escape_string($emailAddress);
+    $clean_two_fa = mysql_real_escape_string($_SESSION['s_two_fa']);
+    // I will be 100 on 2075-03-01. hehehe
+    $sql = "INSERT INTO users VALUES('','$emailAddress', '$clean_two_fa', '$hashed', '$sealed_priv', '$publickey', '10', '0', '2075-03-01 12:00:00')";
 
-	$sql_result = mysql_query($sql,$connection)
+    $sql_result = mysql_query($sql,$connection)
           or die("Unable to execute mysql query." .mysql_error());
 
-        if ($sql_result) {
+    if ($sql_result) {
 
-		echo "Your account has been successfully created.<p>";
-		echo "Click <a href=\"index.php\">here</a> to login.";
+        echo "Your account has been successfully created.<p>";
+        echo "Click <a href=\"index.php\">here</a> to login.";
 
-		$_SESSION['s_businessname'] = "";
-		$_SESSION['s_first_name'] = "";
-		$_SESSION['s_last_name'] = "";
-		$_SESSION['s_city'] = "";
-		$_SESSION['s_state'] = "";
-		$_SESSION['s_email1'] = "";
-		$_SESSION['s_country'] = "";
-		$_SESSION['s_reg_password'] = "";
-	        $_SESSION['s_reg_email'] = "";
-		$_SESSION['s_phone'] = "";
-		$_SESSION['s_two_fa'] = "";
-		$_SESSION['s_codeToEnter'] = "";
-		$_SESSION['s_reg_gateway'] = "";
-		$_SESSION['s_sms_gateway'] = "";
-		$_SESSION = array();
-		exit();
+        $_SESSION['s_businessname'] = "";
+        $_SESSION['s_first_name'] = "";
+        $_SESSION['s_last_name'] = "";
+        $_SESSION['s_city'] = "";
+        $_SESSION['s_state'] = "";
+        $_SESSION['s_email1'] = "";
+        $_SESSION['s_country'] = "";
+        $_SESSION['s_reg_password'] = "";
+            $_SESSION['s_reg_email'] = "";
+        $_SESSION['s_phone'] = "";
+        $_SESSION['s_two_fa'] = "";
+        $_SESSION['s_codeToEnter'] = "";
+        $_SESSION['s_reg_gateway'] = "";
+        $_SESSION['s_sms_gateway'] = "";
+        $_SESSION = array();
+        exit();
 
-        } else {
-
-                echo "Error creating account.";
-
-        }
+    } else {
+        echo "Error creating account.";
+    }
 
 } // end gen_cert() function
 
 function encrypt($message) {
 
-	/** Encrypt the message base64_encode it to store in the database. */
-        $sealed_message = trim(base64_encode(mcrypt_encrypt(MCRYPT_RIJNDAEL_256, $_SESSION['s_pass'], $message, MCRYPT_MODE_ECB, mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB), MCRYPT_RAND))));
+    /** Encrypt the message base64_encode it to store in the database. */
+    $sealed_message = trim(base64_encode(mcrypt_encrypt(MCRYPT_RIJNDAEL_256, $_SESSION['s_pass'], $message, MCRYPT_MODE_ECB, mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB), MCRYPT_RAND))));
 
-	return $sealed_message;
+    return $sealed_message;
 
 }
 
 function decrypt($message) {
 
-	/** Decrypt the message base64_decode. */
-	$unseal_message = trim(mcrypt_decrypt(MCRYPT_RIJNDAEL_256, $_SESSION['s_pass'], base64_decode($message), MCRYPT_MODE_ECB, mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB), MCRYPT_RAND)));
+    /** Decrypt the message base64_decode. */
+    $unseal_message = trim(mcrypt_decrypt(MCRYPT_RIJNDAEL_256, $_SESSION['s_pass'], base64_decode($message), MCRYPT_MODE_ECB, mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB), MCRYPT_RAND)));
 
-	return $unseal_message;
+    return $unseal_message;
 
 }
 function priv_tmp_decrypt($private_key,$pass) {
 
-	$unseal_priv = trim(mcrypt_decrypt(MCRYPT_RIJNDAEL_256, $pass, base64_decode($private_key), MCRYPT_MODE_ECB, mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB), MCRYPT_RAND)));
+    $unseal_priv = trim(mcrypt_decrypt(MCRYPT_RIJNDAEL_256, $pass, base64_decode($private_key), MCRYPT_MODE_ECB, mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB), MCRYPT_RAND)));
 
-	return $unseal_priv;
+    return $unseal_priv;
 
 }
 
 function sign_msg($msg) {
 
-	// Just pass the key as defined above
-	$privatekey = openssl_get_privatekey($_SESSION['s_priv_tmp'],$_SESSION['s_pass']);
+    // Just pass the key as defined above
+    $privatekey = openssl_get_privatekey($_SESSION['s_priv_tmp'],$_SESSION['s_pass']);
 
-	openssl_sign($msg, $binary_signature, $privatekey, OPENSSL_ALGO_SHA1);
+    openssl_sign($msg, $binary_signature, $privatekey, OPENSSL_ALGO_SHA1);
 
-	$t_signature = base64_encode($binary_signature);
+    $t_signature = base64_encode($binary_signature);
 
-	return $t_signature;
+    return $t_signature;
 
 }
 
 function verify_msg($msg,$binary_signature,$public_key) {
+    // Check signature
+    $ok = openssl_verify($msg, $binary_signature, $public_key, OPENSSL_ALGO_SHA1);
 
-	// Check signature
-	$ok = openssl_verify($msg, $binary_signature, $public_key, OPENSSL_ALGO_SHA1);
-
-	if ($ok == 1) {
-
-		$ok = "1";
-
-	} elseif ($ok == 0) {
-    
-		$ok = "0";
-
-	} else {
-
-		$ok = "2";
-	
-	}
-
-	return $ok;
-
-}
+    if ($ok == 1) {
+        $ok = "1";
+    } elseif ($ok == 0) {
+        $ok = "0";
+    } else {
+        $ok = "2";
+    }
+        return $ok;
+    }
 
 // Encrypt the RC4 key that encrypts the message with the user's public key
 function e_seal($source,$pub_key) {
+    // Need to credit the author I got this function from.
+    /** sumadhuracool at gmail dot com 23-Jun-2011 04:22 => http://www.php.net/manual/en/function.openssl-public-encrypt.php */
+    //Encryption with public key
+    //path holds the certificate path present in the system               
+    openssl_get_publickey($pub_key);
+    $j=0;
+    $x=strlen($source)/10;
+    $y=floor($x);
+    
+    for($i=0; $i<$y; $i++) {
+        $crypttext='';
 
-		// Need to credit the author I got this function from.
-		/** sumadhuracool at gmail dot com 23-Jun-2011 04:22 => http://www.php.net/manual/en/function.openssl-public-encrypt.php */
-		//Encryption with public key
-                //path holds the certificate path present in the system               
-                openssl_get_publickey($pub_key);
-                $j=0;
-                $x=strlen($source)/10;
-                $y=floor($x);
-                for($i=0;$i<$y;$i++)
-                {
-                $crypttext='';
-               
-                openssl_public_encrypt(substr($source,$j,10),$crypttext,$pub_key);$j=$j+10;
-                $crt.=$crypttext;
-                $crt.=":::";
-                }
-                if((strlen($source)%10)>0)
-                {
-                openssl_public_encrypt(substr($source,$j),$crypttext,$pub_key);
-                $crt.=$crypttext;
-                }   
-                return($crt);
-               
+        openssl_public_encrypt(substr($source,$j,10),$crypttext,$pub_key);$j=$j+10;
+        $crt.=$crypttext;
+        $crt.=":::";
+    }
+    
+    if((strlen($source)%10)>0) {
+        openssl_public_encrypt(substr($source,$j),$crypttext,$pub_key);
+        $crt.=$crypttext;
+    }   
+    return($crt);
+
 }
 
 //Decryption with private key
 /** sumadhuracool at gmail dot com 23-Jun-2011 04:22 => http://www.php.net/manual/en/function.openssl-public-encrypt.php */
 function d_seal($crypttext,$priv_key,$privKey) {
-// Need to credit the author I got this function from.
-                $res1= openssl_get_privatekey($priv_key,$privKey);
-                $tt=explode(":::",$crypttext);
-                $cnt=count($tt);
-                $i=0;
-                while($i<$cnt)
-                {
-                openssl_private_decrypt($tt[$i],$str1,$res1);
-                $str.=$str1;
-                $i++;
-                }
-                return $str;
+	// Need to credit the author I got this function from.
+	$res1= openssl_get_privatekey($priv_key,$privKey);
+	$tt=explode(":::",$crypttext);
+	$cnt=count($tt);
+	$i=0;
+	while($i<$cnt) {
+		openssl_private_decrypt($tt[$i],$str1,$res1);
+		$str.=$str1;
+		$i++;
+	}
+	
+	return $str;
 
 } // end function d_seal
 
@@ -544,48 +492,48 @@ function sms_random_code_auth() {
 
 // Performs voice call for authentication
 function random_code() {
-global $caller_id;
+	global $caller_id;
 
-	// Generate a 5 digit number
-        // http://elementdesignllc.com/2011/06/generate-random-10-digit-number-in-php/
-        $random = substr(number_format(time() * rand(),0,'',''),0,5);
+		// Generate a 5 digit number
+	        // http://elementdesignllc.com/2011/06/generate-random-10-digit-number-in-php/
+	        $random = substr(number_format(time() * rand(),0,'',''),0,5);
 
-        // Set as a session variable to be passed to the check to determine if the code is valid.
-        $_SESSION['s_codeToEnter'] = $random;
+	        // Set as a session variable to be passed to the check to determine if the code is valid.
+	        $_SESSION['s_codeToEnter'] = $random;
 
-	if ($_SESSION['s_reg_phone'] != "") {
-	
-		// If they are registering, then use this number.
-		$phone_no = $_SESSION['s_reg_phone'];
+		if ($_SESSION['s_reg_phone'] != "") {
+		
+			// If they are registering, then use this number.
+			$phone_no = $_SESSION['s_reg_phone'];
 
-	} else {
+		} else {
 
-		// Otherwise, use the one already defined.
-		$phone_no = $_SESSION['s_phone'];
+			// Otherwise, use the one already defined.
+			$phone_no = $_SESSION['s_phone'];
 
-	}
+		}
 
-        // Random numbers to put into the call file
-        $num1 = $random[0];
-        $num2 = $random[1];
-        $num3 = $random[2];
-        $num4 = $random[3];
-        $num5 = $random[4];
+	        // Random numbers to put into the call file
+	        $num1 = $random[0];
+	        $num2 = $random[1];
+	        $num3 = $random[2];
+	        $num4 = $random[3];
+	        $num5 = $random[4];
 
-        // Callout file
-        $call_data = "Channel: IAX2/jnctn_out/$phone_no\n";
-        $call_data .= "Callerid:". $caller_id."\n";
-        $call_data .= "Application: Background\n";
-        // Reads "Please enter your one time password <pause for one second> <reads code with one second delays>.  Your one time password is <reads code again>. Goodbye" then hangs up the call.
-        $call_data .= "Data: silence/2&en/please-enter-the&digits/1&en/time&vm-password&silence/1&digits/$num1&silence/1&digits/$num2&silence/1&digits/$num3&silence/1&digits/$num4&silence/1&digits/$num5&silence/2&en/your&vm-password&en/is&digits/$num1&digits/$num2&digits/$num3&digits/$num4&digits/$num5&en/goodbye";
+	        // Callout file
+	        $call_data = "Channel: IAX2/jnctn_out/$phone_no\n";
+	        $call_data .= "Callerid:". $caller_id."\n";
+	        $call_data .= "Application: Background\n";
+	        // Reads "Please enter your one time password <pause for one second> <reads code with one second delays>.  Your one time password is <reads code again>. Goodbye" then hangs up the call.
+	        $call_data .= "Data: silence/2&en/please-enter-the&digits/1&en/time&vm-password&silence/1&digits/$num1&silence/1&digits/$num2&silence/1&digits/$num3&silence/1&digits/$num4&silence/1&digits/$num5&silence/2&en/your&vm-password&en/is&digits/$num1&digits/$num2&digits/$num3&digits/$num4&digits/$num5&en/goodbye";
 
-        $num1 = "";
-        $num2 = "";
-        $num3 = "";
-        $num4 = "";
-        $num5 = "";
+	        $num1 = "";
+	        $num2 = "";
+	        $num3 = "";
+	        $num4 = "";
+	        $num5 = "";
 
-	return $call_data;
+		return $call_data;
 
 } // end random_code function
 
@@ -648,43 +596,7 @@ function sha1_thumbprint($file) {
 
 } // end sha1_thumbprint function
 
-// Prompt to display on the registration screen
-function pass_prompt() {
 
-?>
-
- <tr>
-
-                                        <td colspan="3" align="left"><strong><strong>*Email Address:</strong><br />
-                                        <input type="text" name="email" size="45" value="<?php print $_SESSION['s_email1']; ?>"></td>
-
-                                </tr>
-
-                                <tr>
-
-                                        <td colspan="3"><strong>WARNING: If you lose your password, it cannot be recovered and all your messages will become unreadable.</strong></td>
-                                </tr>
-
-                                <tr>
-
-                                        <td align="left"><strong>*Password:</strong><br />
-                                        <input type="password" name="password" value=""><br />
-
-                                        <strong>*Confirm Password:</strong><br />
-                                        <input type="password" name="confirm_pass" value=""><br />
-
-                                </tr>
-
-                                <tr>
-
-                                        <td colspan="3"><strong>WARNING: If you lose your password, it cannot be recovered and all your messages will become unreadable.</strong></td>
-                                </tr>
-
-                                </tr>
-
-<?php
-
-}
 
 // Clean data before inserting into db query
 function cleanup($value) {
@@ -694,157 +606,4 @@ function cleanup($value) {
         return $value;
 
 }
-
-function html_header() {
-
-?>
-<!DOCTYPE html>
-<!--[if lt IE 7 ]><html class="ie ie6" lang="en"> <![endif]-->
-<!--[if IE 7 ]><html class="ie ie7" lang="en"> <![endif]-->
-<!--[if IE 8 ]><html class="ie ie8" lang="en"> <![endif]-->
-<!--[if (gte IE 9)|!(IE)]><!--><html lang="en"> <!--<![endif]-->
-<head>
-<style type="text/css">
-        .row0 {
-            background-color: #CACAFF;
-        }
-        
-        .row1 {
-            background-color: #ffffff;
-        }
-        </style>
-
-        <!-- Basic Page Needs
-  ================================================== -->
-        <meta charset="utf-8">
-        <title>h2H Messenger</title>
-        <meta name="description" content="">
-        <meta name="author" content="">
-
-        <!-- Mobile Specific Metas
-  ================================================== -->
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-
-        <!-- CSS
-  ================================================== -->
-        <link rel="stylesheet" href="stylesheets/base.css">
-        <link rel="stylesheet" href="stylesheets/skeleton.css">
-        <link rel="stylesheet" href="stylesheets/layout.css">
-
-        <!--[if lt IE 9]>
-                <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
-        <![endif]-->
-
-        <!-- Favicons
-        ================================================== -->
-        <link rel="shortcut icon" href="images/favicon.ico">
-        <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
-        <link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
-        <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
-
-<?php /* Script used to verify fingerprint of a recipient's public key */ ?>
-<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
-<script type="text/javascript">
- 
-/* Function borrowed from: http://www.codeforest.net/simple-search-with-php-jquery-and-mysql by Zvonko Bi.kup*/
-$(function() {
- 
-    $(".search_button").click(function() {
-        // getting the value that user typed
-        var searchString    = $("#search_box").val();
-        // forming the queryString
-        var data            = 'to_email='+ searchString;
-         
-        // if searchString is not empty
-        if(searchString) {
-            // ajax call
-            $.ajax({
-                type: "POST",
-                url: "get_fprint.php",
-                data: data,
-                beforeSend: function(html) { // this happens before actual call
-                    $("#results").html(''); 
-                    $("#searchresults").show();
-                    $(".word").html(searchString);
-               },
-               success: function(html){ // this happens after we get results
-                    $("#results").show();
-                    $("#results").append(html);
-              }
-            });    
-        }
-        return false;
-    });
-});
-</script>
-
-</head>
-<body>
-
-<div class="container">
-                <div class="sixteen columns">
-                        <hr />
-                </div>
-                <div class="one-half column">
-&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;
-<p>
-                </div>
-                <div class="one-half column">
-
-<?
-
-}
-
-function html_footer() {
-
-	
-	?>
-
-	</div>
-                <!--div class="one-third column">
-&nbsp;
-                </div-->
-
-        </div><!-- container -->
-
-
-<!-- End Document
-================================================== -->
-</body>
-</html>
-
-	<?
-
-}
-
 ?>
