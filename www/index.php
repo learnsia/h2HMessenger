@@ -3,7 +3,7 @@
 ini_set('display_errors', 'On');
 error_reporting(E_ALL);
 
-include('function.php');
+include('includes/function.php');
 
 require('includes/header.php');
 
