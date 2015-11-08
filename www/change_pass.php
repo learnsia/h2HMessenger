@@ -6,7 +6,7 @@ loggedIn();
 
 menu();
 
-html_header();
+include('includes/header.php');
 
 /***  Corporate policies may require passwords to be changed on a regular basis so this is the beginning of a
       script to allow changing passwords...i should be using passphrase...since it is PKI. */
@@ -233,6 +233,6 @@ if ($_POST['change_pass'] == "Change Password") {
 
 } // end main if statement change_pass
 
-html_footer();
+include('includes/footer.php');
 
 ?>
