@@ -1,6 +1,6 @@
 <?php
 
-include('function.php');
+include('includes/function.php');
 
 if ($_POST['submit'] == "Register") {
 
@@ -25,7 +25,7 @@ if ($_POST['submit'] == "Register") {
     	die("<b>Please fill out all required fields!</b>");
 
 	// Validate the email address.
-	include('EmailAddressValidator.php');
+	include('includes/EmailAddressValidator.php');
 	$validator = new EmailAddressValidator;
 
 	if ($validator->check_email_address($email1)) { 
