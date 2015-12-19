@@ -1,3 +1,4 @@
+<?php
 /*
 *
 * h2Hmessenger config file.  Edit this to suit your environment
@@ -47,3 +48,4 @@ $two_factor_both = "0";
 // If supported, by your voip provider enter your caller id to be displayed when placing a
 // call for authentication.
 $caller_id = "YOUR NUMBER";
+?>
