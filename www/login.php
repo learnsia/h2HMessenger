@@ -119,18 +119,14 @@ if (mysql_num_rows($sql_result) != 0) {
     	// Redirect to the login screen
     	header('Location: preauth.php');
 		exit();
-	} else {
-		// bad creds, update DB and throw error
-		record_failed_login();
-		echo("Please ensure you typed the correct username and password!");
 	} // end check pass if statement
         
-} else {
-	// no creds, update db and throw error.
-	record_failed_login();
-	echo "Please ensure you typed the correct username and password!";
-	exit();
-
 }
+
+// If execution proceeds this far, either the credentials are invalid or no such account exists.  
+// Update db and throw error.
+record_failed_login();
+echo "Please ensure you typed the correct username and password!";
+exit();
 
 ?>
