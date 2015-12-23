@@ -1,5 +1,4 @@
 <?php
-
 /*******************************************************************************************
 
 Edit below as needed for your environment.
@@ -7,7 +6,7 @@ Edit below as needed for your environment.
 *******************************************************************************************/
 
 // Implements its own session_save_handler()
-require_once 'SecureSession.php';
+require_once('SecureSession.php');
 
 // change the default session folder in a temporary dir
 $sessionPath = '/tmp';
@@ -420,7 +419,7 @@ function check_pass($password,$confirm_pass) {
         
         }
 
-        if ($error) {
+        if (isset($error)) {
 
                $result = "Password validation failure: $error";
 
@@ -606,4 +605,46 @@ function cleanup($value) {
         return $value;
 
 }
+
+// Update our records on failed logins.  
+function record_failed_login() {
+
+    $db_connection = connection();
+    $remote_addr = $_SERVER['REMOTE_ADDR'];
+
+    $login_attempts = mysql_query("SELECT * FROM failed_logins WHERE IP_address = '" . $remote_addr . "'",$db_connection);
+
+    if (mysql_num_rows($login_attempts) == 1) {
+        // since this host has made an attempt before, let's just update attempts and timestamp
+        $results = mysql_fetch_object($login_attempts);
+        $attempts = $results->attempts + 1;
+
+        mysql_query("UPDATE failed_logins SET timestamp=NOW(),attempts=" . $attempts . " WHERE IP_address='" . $remote_addr . "'",$db_connection);
+
+    } else {
+        //if we don't have a record for this IP, insert a new one with a timestamp of now and a count of one.
+        $fap = mysql_query("INSERT INTO failed_logins (IP_address, timestamp, attempts) VALUES ('" . $remote_addr . "', NOW(), 1)", $db_connection);
+
+    }
+}
+
+function is_locked_out() {
+    $db_connection = connection();
+
+    // Look for the Source IP of the request in our DB, and calculate the timestamp returned + 15 minutes ( the default ban duration).
+    $login_attempts = mysql_query("SELECT *,TIMESTAMPDIFF(MINUTE,NOW(),ADDTIME(timestamp,'00:15:00')) AS timeleft FROM failed_logins WHERE IP_address = '" . $request_IP . "'",$db_connection);
+
+    if(mysql_num_rows($login_attempts) != 0) {
+
+        // Fetch failed_login value
+        $obj = mysql_fetch_object($login_attempts);
+
+        if ($obj->attempts >= $failed_count) {
+
+            echo("<b>Error: Too many login attempts have been made, please try again in " . $obj->timeleft . " minutes.</b>");
+            exit();  
+        }
+    }
+}
+
 ?>
