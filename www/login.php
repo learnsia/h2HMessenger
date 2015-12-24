@@ -13,7 +13,7 @@ if ($username == "" || $upassword == "") {
 $connection = connection();
 
 // Check to see if the user exists and provides the right password.
-$sql = mressf("SELECT id,delivery,upass,pub_key,priv_key,timeout FROM users WHERE email = '%s'", $username);
+$sql = mressf("SELECT id,delivery,upass,pub_key,priv_key FROM users WHERE email = '%s'", $username);
 
 // Execute the query
 $sql_result = mysql_query($sql,$connection)
@@ -56,7 +56,6 @@ if (mysql_num_rows($sql_result) != 0) {
 		$delivery = "$i->delivery";
 		$priv_tmp = "$i->priv_key";
 		$pub = "$i->pub_key";
-		$timeout = "$i->timeout";
 
 		// Private key session variable
 		$_SESSION['s_priv_tmp'] = "";
