@@ -627,24 +627,4 @@ function record_failed_login() {
 
     }
 }
-
-function is_locked_out() {
-    $db_connection = connection();
-
-    // Look for the Source IP of the request in our DB, and calculate the timestamp returned + 15 minutes ( the default ban duration).
-    $login_attempts = mysql_query("SELECT *,TIMESTAMPDIFF(MINUTE,NOW(),ADDTIME(timestamp,'00:15:00')) AS timeleft FROM failed_logins WHERE IP_address = '" . $request_IP . "'",$db_connection);
-
-    if(mysql_num_rows($login_attempts) != 0) {
-
-        // Fetch failed_login value
-        $obj = mysql_fetch_object($login_attempts);
-
-        if ($obj->attempts >= $failed_count) {
-
-            echo("<b>Error: Too many login attempts have been made, please try again in " . $obj->timeleft . " minutes.</b>");
-            exit();  
-        }
-    }
-}
-
 ?>
