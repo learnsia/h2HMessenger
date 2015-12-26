@@ -623,7 +623,7 @@ function record_failed_login() {
 
     } else {
         //if we don't have a record for this IP, insert a new one with a timestamp of now and a count of one.
-        $fap = mysql_query("INSERT INTO failed_logins (IP_address, timestamp, attempts) VALUES ('" . $remote_addr . "', NOW(), 1)", $db_connection);
+        mysql_query("INSERT INTO failed_logins (IP_address, timestamp, attempts) VALUES ('" . $remote_addr . "', NOW(), 1)", $db_connection);
 
     }
 }
