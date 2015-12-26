@@ -225,7 +225,7 @@ function gen_cert($upassword) {
     $clean_email = mysql_real_escape_string($emailAddress);
     $clean_two_fa = mysql_real_escape_string($_SESSION['s_two_fa']);
     // I will be 100 on 2075-03-01. hehehe
-    $sql = "INSERT INTO users VALUES('','$emailAddress', '$clean_two_fa', '$hashed', '$sealed_priv', '$publickey', '10', '0', '2075-03-01 12:00:00')";
+    $sql = "INSERT INTO users VALUES('','$emailAddress', '$clean_two_fa', '$hashed', '$sealed_priv', '$publickey')";
 
     $sql_result = mysql_query($sql,$connection)
           or die("Unable to execute mysql query." .mysql_error());
