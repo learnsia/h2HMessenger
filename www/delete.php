@@ -1,7 +1,7 @@
 <?php
 /** Initial screen the user sees after login. */
 
-include('function.php');
+include('includes/function.php');
 
 loggedIn();
 

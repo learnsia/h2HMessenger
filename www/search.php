@@ -1,10 +1,10 @@
 <?php
 
-include('function.php');
+include('includes/function.php');
 
 loggedIn();
 
-html_header();
+include('includes/header.php');
 
 menu();
 
@@ -147,6 +147,6 @@ $rowclass = 0;
 
 }
 
-html_footer();
+include('includes/footer.php');
 
 ?>

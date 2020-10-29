@@ -1,7 +1,7 @@
 <?php
 /** Initial screen the user sees after login. */
 
-include('function.php');
+include('includes/function.php');
 
 if ($_SESSION['s_preauth'] != "HAS_PREAUTH") {
 
@@ -12,7 +12,7 @@ if ($_SESSION['s_preauth'] != "HAS_PREAUTH") {
 
 loggedIn();
 
-html_header();
+include('includes/header.php');
 
 menu();
 
@@ -144,6 +144,6 @@ $rowclass = 0;
 
 } // end num rows check
 
-html_footer();
+include('includes/footer.php');
 
 ?>

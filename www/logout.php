@@ -1,5 +1,5 @@
 <?php
-include('function.php');
+include('includes/function.php');
 // Want to be sure these are set to null
 $_SESSION['s_priv_tmp'] = "";
 $_SESSION['s_pass'] = "";

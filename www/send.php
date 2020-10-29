@@ -1,12 +1,12 @@
 <?php
 
-include('function.php');
+include('includes/function.php');
 
 loggedIn();
 
 menu();
 
-html_header();
+include('includes/header.php');
 
 if ($_POST['submit'] == "Send" || $_POST['submit'] == "Reply") {
 
@@ -159,6 +159,6 @@ if ($_POST['submit'] == "Send" || $_POST['submit'] == "Reply") {
 
 } // end main If statement
 
-html_footer();
+include('includes/footer.php');
 
 ?>
